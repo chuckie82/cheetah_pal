@@ -4,13 +4,13 @@
 ##########################################
 #FIXME: change to PAL direcotry
 # Cheetah
-export CDIR=/reg/neh/home/yoon82/temp/cheetah
+export CDIR=/home/yoon82/cheetah_pal
 # HDF5
-export HDF5_ROOT=/reg/neh/home/yoon82/temp/hdf5_1.8.10-patch1_pthread
+export HDF5_ROOT=/home/yoon82/hdf5-1.8.10-patch1-pthread
 # CMAKE
-export PATH=/reg/neh/home/yoon82/temp/cmake/bin:${PATH}
+export PATH=/home/yoon82/cmake/bin:${PATH}
 # Python3
-export ADIR=/reg/neh/home/yoon82/anaconda3
+export ADIR=/home/yoon82/anaconda3
 ##########################################
 
 echo Setting up Cheetah
