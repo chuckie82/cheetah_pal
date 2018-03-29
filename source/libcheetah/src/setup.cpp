@@ -7,6 +7,8 @@
  *
  */
 
+// Chuck: I think this is deprecated (use global.cpp instead)
+
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>

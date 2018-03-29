@@ -23,7 +23,6 @@
 #include "detectorObject.h"
 #include "cheetahGlobal.h"
 #include "cheetahEvent.h"
-#include "cheetahEvent.h"
 #include "cheetahmodules.h"
 
 /*
@@ -31,6 +30,8 @@
  */
 cPixelDetectorCommon::cPixelDetectorCommon()
 {
+    printf("### cPixelDetectorCommon::cPixelDetectorCommon\n");
+
 
     // Defaults to CXI cspad configuration
     strcpy(detectorType, "cspad");
@@ -196,30 +197,30 @@ cPixelDetectorCommon::cPixelDetectorCommon()
     savePixelmask = 1;
 
     // Saving options
-    saveDetectorRaw = 0;
-    saveDetectorCorrected = 1;
-    saveDetectorAndPhotonCorrected = 0;
-    saveNonAssembled = 1;
-    saveAssembled = 0;
-    saveAssembledAndDownsampled = 0;
-    saveRadialAverage = 1;
-    saveThumbnail = 0;
-    saveDownsampled = 0;
+    saveDetectorRaw                      = 0;
+    saveDetectorCorrected                = 1;
+    saveDetectorAndPhotonCorrected       = 0;
+    saveNonAssembled                     = 1;
+    saveAssembled                        = 0;
+    saveAssembledAndDownsampled          = 0;
+    saveRadialAverage                    = 1;
+    saveThumbnail                        = 0;
+    saveDownsampled                      = 0;
 
     // Powder saving options
-    savePowderDetectorRaw = 1;
-    savePowderDetectorCorrected = 1;
+    savePowderDetectorRaw                = 1;
+    savePowderDetectorCorrected          = 1;
     savePowderDetectorAndPhotonCorrected = 1;
-    savePowderNonAssembled = 1;
-    savePowderAssembled = 1;
-    savePowderAssembledAndDownsampled = 0;
-    savePowderRadialAverage = 1;
-    savePowderMasked = 0;
+    savePowderNonAssembled               = 1;
+    savePowderAssembled                  = 1;
+    savePowderAssembledAndDownsampled    = 0;
+    savePowderRadialAverage              = 1;
+    savePowderMasked                     = 0;
 
 }
 
 void cPixelDetectorCommon::configure(cGlobal * global) {
-	
+
 	/*
 	 * Configure basic detector parameters
 	 */
@@ -314,6 +315,32 @@ void cPixelDetectorCommon::configure(cGlobal * global) {
 		pix_nn = pix_nx * pix_ny;
 		pixelSize = 172e-6;
 		
+	}
+	else if(strcmp(detectorName, "mx225hs-2x") == 0 ) {
+		strcpy(detectorType, "mx225hs-2x");
+		nasics_x = MX225HS2X_nASICS_X;
+		nasics_y = MX225HS2X_nASICS_Y;
+		asic_nn = asic_nx*asic_ny;
+		asic_nx = MX225HS2X_ASIC_NX;
+		asic_ny = MX225HS2X_ASIC_NY;
+		asic_nn = asic_nx*asic_ny;
+		pix_nx = asic_nx * nasics_x;
+		pix_ny = asic_ny * nasics_y;
+		pix_nn = pix_nx * pix_ny;
+		pixelSize = 78e-6;
+	}
+	else if(strcmp(detectorName, "mx225hs-4x") == 0 ) {
+		strcpy(detectorType, "mx225hs-4x");
+		nasics_x = MX225HS4X_nASICS_X;
+		nasics_y = MX225HS4X_nASICS_Y;
+		asic_nn = asic_nx*asic_ny;
+		asic_nx = MX225HS4X_ASIC_NX;
+		asic_ny = MX225HS4X_ASIC_NY;
+		asic_nn = asic_nx*asic_ny;
+		pix_nx = asic_nx * nasics_x;
+		pix_ny = asic_ny * nasics_y;
+		pix_nn = pix_nx * pix_ny;
+		pixelSize = 156e-6;
 	}
 	else {
 		printf("Error: unknown detector name %s\n", detectorName);

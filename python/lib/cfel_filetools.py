@@ -337,14 +337,13 @@ def read_cxi(filename, frameID=0, data=False, mask=False, peaks=False, photon_en
     # Open CXI file
     hdf5_fh = h5py.File(filename, 'r')
 
-
     # Peak list
     if peaks == True:
         try:
             n_peaks = hdf5_fh['/entry_1/result_1/nPeaks'][frameID]
             peakXPosRaw = hdf5_fh['/entry_1/result_1/peakXPosRaw'][frameID]
             peakYPosRaw = hdf5_fh['/entry_1/result_1/peakYPosRaw'][frameID]
-            peak_xy = (peakXPosRaw.flatten(), peakYPosRaw.flatten())
+            #peak_xy = (peakXPosRaw.flatten(), peakYPosRaw.flatten())
         except:
             n_peaks = 0
             peakXPosRaw = np.nan
@@ -353,7 +352,6 @@ def read_cxi(filename, frameID=0, data=False, mask=False, peaks=False, photon_en
         n_peaks = 0
         peakXPosRaw = np.nan
         peakYPosRaw = np.nan
-
 
     # Masks
     if mask == True:
@@ -368,17 +366,22 @@ def read_cxi(filename, frameID=0, data=False, mask=False, peaks=False, photon_en
     # Photon energy
     if photon_energy == True:
         try:
-            photon_energy_eV = hdf5_fh['/LCLS/photon_energy_eV'][frameID]
+            if '/PAL/photon_energy_eV' in hdf5_fh:
+                photon_energy_eV = hdf5_fh['/PAL/photon_energy_eV'][frameID]
+            elif '/LCLS/photon_energy_eV' in hdf5_fh:
+                photon_energy_eV = hdf5_fh['/LCLS/photon_energy_eV'][frameID]
         except:
             photon_energy_eV = 'nan'
     else:
         photon_energy_eV = 'nan'
 
-
     # Camera length
     if camera_length == True:
         try:
-            EncoderValue = hdf5_fh['/LCLS/detector_1/EncoderValue'][frameID]
+            if '/PAL/detector_1/EncoderValue' in hdf5_fh:
+                EncoderValue = hdf5_fh['/PAL/detector_1/EncoderValue'][frameID]
+            elif '/LCLS/detector_1/EncoderValue' in hdf5_fh:
+                EncoderValue = hdf5_fh['/LCLS/detector_1/EncoderValue'][frameID]
         except:
             EncoderValue = 'nan'
     else:

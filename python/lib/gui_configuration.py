@@ -18,21 +18,44 @@ import lib.gui_locations as gui_locations
 #
 #   Extract the LCLS template and modify to suit determined experiment
 #
-def extract_lcls_template(self):
+def extract_template(self, facility='lcls'):
     #   Deduce experiment number, etc using de-referenced paths
     #   Assumes the file path follows the pattern:   /reg/d/psdm/cxi/cxij4915/scratch/...
     realdir = os.getcwd()
 
+    instr = None
+    expt = None
+    xtcdir = None
+    userdir = None
     #   Now for some LCLS-specific stuff
-    ss = realdir.split('/')
-    ss = ss[1:]
-
-    ss[1] = 'd'
-    ss[2] = 'psdm'
-    instr = ss[3]
-    expt = ss[4]
-    xtcdir = '/' + str.join('/', ss[0:5]) + '/xtc'
-    userdir = '/' + str.join('/', ss) + '/cheetah'
+    if facility == 'lcls':
+        ss = realdir.split('/')
+        ss = ss[1:]
+        ss[1] = 'd'
+        ss[2] = 'psdm'
+        instr = ss[3]
+        expt = ss[4]
+        xtcdir = '/' + str.join('/', ss[0:5]) + '/xtc'
+        userdir = '/' + str.join('/', ss) + '/cheetah'
+    elif facility == 'pal':
+        ss = realdir.split('/')
+        ss = ss[1:]
+        instr = 'cxi'
+        expt = ss[3]
+        xtcdir = '/' + str.join('/', ss[0:4]) + '/raw_data'
+        userdir = '/' + str.join('/', ss) + '/cheetah'
+        print('    Instrument: ', instr)
+        print('    Experiment: ', expt)
+        print('    XTC directory: ', xtcdir)
+        print('    Output directory: ', userdir)
+        print('#### WARNING: OVERRIDE gui_configuration.py ####') # FIXME: this has to reflect PAL directory structure
+        instr = 'cxi'
+        expt = 'test_180316'
+        xtcdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/raw_data'
+        userdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/cheetah'
+    else:
+        print('Unknown facility. Exiting...')
+        exit(0)
 
     print('Deduced experiment information:')
     print('    Relative path: ', dir)
@@ -73,7 +96,7 @@ def extract_lcls_template(self):
     # Unpack template
     print('>---------------------<')
     print('Extracting template...')
-    cmd = ['tar', '-xf', '/reg/g/cfel/cheetah/template.tar']
+    cmd = ['tar', '-xf', '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/template.tar'] # FIXME: this has to reflect PAL directory structure
     cfel_file.spawn_subprocess(cmd, wait=True)
     print("Done")
 
@@ -142,7 +165,6 @@ def extract_lcls_template(self):
     #
     modify_cheetah_config_files(self)
 
-
 #
 #   Modify a bunch of configuration files
 #   Separate function so that it can be called from the menu as well as on startup
@@ -162,7 +184,6 @@ def modify_cheetah_config_files(self):
         prefix = '..'
     else:
         prefix = 'cheetah'
-
 
     # Modify detector type string
     print("Modifying detector type...")

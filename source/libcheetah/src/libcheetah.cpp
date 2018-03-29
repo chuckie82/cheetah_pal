@@ -39,35 +39,40 @@ void* pythonWorker(void*);
  *  libCheetah initialisation function
  */
 int cheetahInit(cGlobal *global) {
-    
-	// Check if we're using psana of the same git commit
-	if(!getenv("PSANA_GIT_SHA") || strcmp(getenv("PSANA_GIT_SHA"),GIT_SHA1)){
-		fprintf(stderr,    "*******************************************************************************************\n");
-		fprintf(stderr,"*** WARNING %s:%d ***\n",__FILE__,__LINE__);
-		
-		if(getenv("PSANA_GIT_SHA")){
-			fprintf(stderr,"***        Using psana from git commit %s         ***\n",getenv("PSANA_GIT_SHA"));
-			fprintf(stderr,"***        and cheetah_ana_mod from git commit %s ***\n",GIT_SHA1);
-		}
-		else{
-			fprintf(stderr,"***         Using a psana version not compiled with cheetah!                            ***\n");
-		}
-		fprintf(stderr,    "*******************************************************************************************\n");
-		sleep(10);
-	}
-	setenv("LIBCHEETAH_GIT_SHA",GIT_SHA1,0);
+    if(strcmp(global->facility,"LCLS")==0) {
+        printf("PSANA GIT SHA: %s\n", getenv("PSANA_GIT_SHA"));
+        printf("GIT SHA: %s\n", GIT_SHA1);
+        // Check if we're using psana of the same git commit
+        if(!getenv("PSANA_GIT_SHA") || strcmp(getenv("PSANA_GIT_SHA"),GIT_SHA1)){
+            fprintf(stderr,    "*******************************************************************************************\n");
+            fprintf(stderr,"*** WARNING %s:%d ***\n",__FILE__,__LINE__);
+
+            if(getenv("PSANA_GIT_SHA")){
+                fprintf(stderr,"***        Using psana from git commit %s         ***\n",getenv("PSANA_GIT_SHA"));
+                fprintf(stderr,"***        and cheetah_ana_mod from git commit %s ***\n",GIT_SHA1);
+            }
+            else{
+                fprintf(stderr,"***         Using a psana version not compiled with cheetah!                            ***\n");
+            }
+            fprintf(stderr,    "*******************************************************************************************\n");
+            sleep(10);
+        }
+        setenv("LIBCHEETAH_GIT_SHA",GIT_SHA1,0);
+    }
 
 	global->self = global;
 	//global->defaultConfiguration();
-	global->parseConfigFile(global->configFile);
+	global->parseConfigFile(global->configFile);    // reads in cheetah.ini
+
 	if(global->validateConfiguration()){
 		ERROR("Validation of given configuration failed");
 		return 1;
 	}
 
-	global->setup();
-	global->writeInitialLog();
-	global->writeConfigurationLog();
+
+	global->setup();                                // global.cpp: configure hit finding params, detector dims etc
+	global->writeInitialLog();                      // write out log.txt
+	global->writeConfigurationLog();                // write out cheetah.out
 	global->writeStatus("Started");
 
 	// Set better error handlers for HDF5
@@ -192,7 +197,7 @@ void cheetahUpdateGlobal(cGlobal *global, cEventData *eventData){
 			//	(10 micron, much less than a pixel size) 
             global->detector[detIndex].detectorZ = floorf(global->detector[detIndex].detectorZ*100+0.5)/100;
             update_camera_length = 1;
-        }	 
+        }
         
 		//	What to do if there is no camera length information?  
 		//	Keep skipping frames until this info is found?  

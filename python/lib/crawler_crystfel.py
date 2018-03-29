@@ -16,7 +16,7 @@ def scan_crystfel(crystfel_dir):
 
     #printf, fout, '# Run, status, directory, processed, hits, hitrate%, mtime'
 
-    run_out = ['r0001']
+    run_out = ['1'] # TODO: tempted to set this to '---'
     status_out = ['---']
     directory_out = ['---']
     processed_out = ['---']

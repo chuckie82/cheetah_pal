@@ -730,6 +730,18 @@ static CXI::Node *createCXISkeleton(const char *filename, cGlobal *global){
      */
     Node *facility = root->createGroup("instrument");
 
+    if(!strcmp(global->facility, "PAL") ) {
+        Node *pal = facility;
+        root->createLink("PAL","instrument");
+
+        pal->createStack("photon_energy_eV",H5T_NATIVE_DOUBLE);
+        pal->createStack("photon_wavelength_A",H5T_NATIVE_DOUBLE);
+        DETECTOR_LOOP{
+            Node* detector = pal->createCXIGroup("detector",detIndex+1);
+            detector->createStack("position",H5T_NATIVE_DOUBLE);
+            detector->createStack("EncoderValue",H5T_NATIVE_DOUBLE);
+        }
+    }
     // LCLS
     if(!strcmp(global->facility, "LCLS") ) {
         //Node *lcls = root->createGroup("LCLS");
@@ -747,7 +759,7 @@ static CXI::Node *createCXISkeleton(const char *filename, cGlobal *global){
             detector->createStack("EncoderValue",H5T_NATIVE_DOUBLE);
         }
         instrument->createLink("experiment_identifier","/entry_1/experiment_identifier");
-        
+
         if(global->cxiLegacyFileFormat == 2015) {
             lcls->createStack("machineTimeNanoSeconds",H5T_NATIVE_INT32);
             lcls->createStack("ebeamCharge",H5T_NATIVE_DOUBLE);
@@ -1330,7 +1342,18 @@ static CXI::Node *createResultsSkeleton(const char *filename, cGlobal *global){
     
     // Information about the instrument/beamline (such as encoder values)
     Node *facility = root->createGroup("instrument");
-    
+
+    if(!strcmp(global->facility, "PAL") ) {
+        Node *pal = facility;
+        root->createLink("PAL","instrument");
+        pal->createStack("photon_energy_eV",H5T_NATIVE_DOUBLE);
+        pal->createStack("photon_wavelength_A",H5T_NATIVE_DOUBLE);
+        DETECTOR_LOOP{
+            Node* detector = pal->createGroup("detector",detIndex);
+            detector->createStack("position",H5T_NATIVE_DOUBLE);
+            detector->createStack("EncoderValue",H5T_NATIVE_DOUBLE);
+        }
+    }
     // LCLS
     if(!strcmp(global->facility, "LCLS") ) {
         Node *lcls = facility;
@@ -1936,7 +1959,7 @@ void closeCXIFiles(cGlobal * global){
 	/* CXI: Go through each file and resize them to their right size */
 	pthread_mutex_lock(&global->saveCXI_mutex);
 	for(uint i=0; i<openCXIFilenames.size(); i++){
-		printf("Closing %s\n",openCXIFilenames[i].c_str());
+		printf("Closing CXI %s\n",openCXIFilenames[i].c_str());
 		closeCXI(openCXIFiles[i]);
 	}
 	openCXIFiles.clear();
@@ -1945,7 +1968,7 @@ void closeCXIFiles(cGlobal * global){
 	
     /* Results: Go through each file and resize them to their right size */
     for(uint i=0; i<openResultsFilenames.size(); i++){
-        printf("Closing %s\n",openResultsFilenames[i].c_str());
+        printf("Closing Results %s\n",openResultsFilenames[i].c_str());
         closeCXI(openResultsFiles[i]);
     }
     openResultsFiles.clear();
@@ -2073,10 +2096,21 @@ void writeCXIData(CXI::Node *cxi, cEventData *eventData, cGlobal *global, uint s
     root["entry_1"]["instrument_1"]["source_1"]["energy"].write(&en,stackSlice);
     root["entry_1"]["experiment_identifier"].write(eventData->eventname,stackSlice);
 
-    
     /*
      *  Write instrument information
      */
+    // PAL
+    if(!strcmp(global->facility, "PAL")) {
+        Node &pal = root["instrument"];
+
+        pal["photon_energy_eV"].write(&eventData->photonEnergyeV,stackSlice);
+        pal["photon_wavelength_A"].write(&eventData->wavelengthA,stackSlice);
+        DETECTOR_LOOP{
+            pal.cxichild("detector",detIndex+1)["position"].write(&global->detector[detIndex].detectorZ,stackSlice);
+            pal.cxichild("detector",detIndex+1)["EncoderValue"].write(&global->detector[detIndex].detectorEncoderValue,stackSlice);
+        }
+    }
+
     // LCLS
     if(!strcmp(global->facility, "LCLS")) {
         //Node &lcls = root["LCLS"];
@@ -2453,7 +2487,13 @@ void writeResultsData(CXI::Node *results, cEventData *eventData, cGlobal *global
     // Event identifier
     root["event_data"]["event_identifier"].write(eventData->eventname,stackSlice);
 
-    
+    if(!strcmp(global->facility, "PAL")) {
+        Node &pal = root["instrument"];
+        DETECTOR_LOOP{
+            pal.child("detector",detIndex)["position"].write(&global->detector[detIndex].detectorZ,stackSlice);
+            pal.child("detector",detIndex)["EncoderValue"].write(&global->detector[detIndex].detectorEncoderValue,stackSlice);
+        }
+    }
     /*
      *  Write instrument information
      */

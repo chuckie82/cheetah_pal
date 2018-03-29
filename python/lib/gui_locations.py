@@ -18,7 +18,6 @@ def determine_location():
 
 
 
-
     #
     #   Determine where we are
     #   Enables location configuration to be overridden separately from what is determined here, eg: from command line
@@ -43,6 +42,10 @@ def determine_location():
         print("Looks like we are at euXFEL.")
         location = 'euXFEL'
 
+    elif hostname.endswith("xfel.pal"):
+        print("Looks like we are at PAL.")
+        location = 'PAL'
+
     else:
         print("Unable to determine location from hostname")
         location = 'None'
@@ -64,7 +67,6 @@ def set_location_configuration(location="Default"):
     result = {}
 
     if  location=='LCLS':
-
         LCLS = {
             'qcommand' : 'bsub -q psanaq'
         }
@@ -76,12 +78,17 @@ def set_location_configuration(location="Default"):
         }
         result.update(CFEL)
 
-
     elif  location=='euXFEL':
         euXFEL = {
             'qcommand' : 'bsub'
         }
         result.update(euXFEL)
+
+    if  location=='PAL':
+        PAL = {
+            'qcommand' : ' '
+        }
+        result.update(PAL)
 
     else:
         default = {

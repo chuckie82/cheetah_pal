@@ -34,8 +34,11 @@ class cheetah_crawler(PyQt5.QtWidgets.QMainWindow):
         # Now some special cases
         if '/reg/d/' in self.data_dir:
             self.datatype = 'XTC'
-        if 'p11' in self.data_dir:
+        elif 'p11' in self.data_dir:
             self.datatype = 'P11'
+        elif '/xfel/ffhs' in self.data_dir:
+            self.datatype = 'PAL'
+
 
         # What have we decided?
         print("Will use data crawler for ", self.datatype)
@@ -54,6 +57,9 @@ class cheetah_crawler(PyQt5.QtWidgets.QMainWindow):
         self.ui.progressBar.setValue(0)
         if self.datatype is 'XTC':
             crawler_slac.scan_data(self.data_dir)
+        elif self.datatype is 'PAL':
+            import lib.crawler_pal as crawler_pal
+            crawler_pal.scan_data(self.data_dir)
         elif self.datatype is 'P11':
             crawler_p11.scan_data(self.data_dir)
         elif self.datatype is 'directories':
@@ -137,8 +143,8 @@ if __name__ == '__main__':
     #   Use parser to process command line arguments
     #    
     parser = argparse.ArgumentParser(description='CFEL cheetah crawler')
-    parser.add_argument("-l", default="none", help="Location (LCLS, P11)")
-    parser.add_argument("-d", default="none", help="Data directory (XTC, CBF, etc)")
+    parser.add_argument("-l", default="none", help="Location (LCLS, P11, PAL)")
+    parser.add_argument("-d", default="none", help="Data directory (XTC, CBF, raw_data, etc)")
     parser.add_argument("-c", default="none", help="Cheetah HDF5 directory")
     parser.add_argument("-i", default="none", help="Indexing directory")
     args = parser.parse_args()

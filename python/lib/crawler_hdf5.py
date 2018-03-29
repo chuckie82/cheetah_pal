@@ -45,19 +45,12 @@ def scan_hdf5(hdf5_dir):
         mtime = ''
 
         # Extract the Cheetah HDF5 directory name
-        basename = os.path.basename(filename)
         dirname = os.path.dirname(filename)
-        dirname2 = os.path.basename(dirname)
-        directory = dirname2
+        directory = os.path.basename(dirname)
 
-        # Extract the run number (Warning: LCLS-specific)
+        # Extract the run number (Warning: PAL-specific) # FIXME: would be good if compatible with LCLS
         if directory.startswith('r'):
-            run = directory[:5]
-        else:
-            part = directory.partition('-')
-            run = part[0]
-        #run = directory[1:5]
-
+            run = int(directory[1:6])
 
 
         #print(filename)

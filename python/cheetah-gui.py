@@ -84,44 +84,48 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
 
         # Length of first list is number of rows - except when it is the fieldnames list
         #nrows = len(status[list(status.keys())[0]])
-        nrows = len(status['Run'])
+        nrows = 0
+        try:
+            nrows = len(status['Run'])
+        except:
+            pass
         self.table.setRowCount(nrows)
         self.table.setColumnCount(ncols)
         self.table.updateGeometry()
 
         # Populate the table
-        numbercols = [0]
         for col, key in enumerate(status['fieldnames']):
-            for row, item in enumerate(status[key]):
+            if nrows > 0:
+                for row, item in enumerate(status[key]):
 
-                #if col in numbercols:
-                if item.isnumeric():
-                    newitem = PyQt5.QtWidgets.QTableWidgetItem()
-                    newitem.setData(PyQt5.QtCore.Qt.DisplayRole, float(item))
-                else:
-                    newitem = PyQt5.QtWidgets.QTableWidgetItem(item)
+                    #if col in numbercols:
+                    if item.isnumeric():
+                        newitem = PyQt5.QtWidgets.QTableWidgetItem()
+                        newitem.setData(PyQt5.QtCore.Qt.DisplayRole, float(item))
+                    else:
+                        newitem = PyQt5.QtWidgets.QTableWidgetItem(item)
 
-                self.table.setItem(row,col,newitem)
+                    self.table.setItem(row,col,newitem)
 
-                # Coloring of table elements
-                self.table.item(row,col).setBackground(PyQt5.QtGui.QColor(255,255,255))
-                if key=='XTC':
-                    if item=='Ready':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(200, 255, 200))
-                    if item == 'Copying' or item == 'Restoring':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 255, 100))
+                    # Coloring of table elements
+                    self.table.item(row,col).setBackground(PyQt5.QtGui.QColor(255,255,255))
+                    if key=='XTC' or key=='H5Input':
+                        if item=='Ready':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(200, 255, 200))
+                        if item == 'Copying' or item == 'Restoring':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 255, 100))
 
-                if key=='Cheetah':
-                    if item=='Finished':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(200, 255, 200))
-                    if item=='Not finished' or item=='Started':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(0, 255, 255))
-                    if item=='Submitted':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 255, 100))
-                    if item=='Terminated':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 200, 200))
-                    if item=='Error':
-                        self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 100, 100))
+                    if key=='Cheetah':
+                        if item=='Finished':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(200, 255, 200))
+                        if item=='Not finished' or item=='Started':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(0, 255, 255))
+                        if item=='Submitted':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 255, 100))
+                        if item=='Terminated':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 200, 200))
+                        if item=='Error':
+                            self.table.item(row, col).setBackground(PyQt5.QtGui.QColor(255, 100, 100))
 
 
         # Table fiddling
@@ -230,7 +234,7 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
         os.chdir(dir)
 
         # Use LCLS schema for now; will need modification to run anywhere else; do this later
-        gui_configuration.extract_lcls_template(self)
+        gui_configuration.extract_template(self, facility='pal')  # TODO: PAL template
 
     #end setup_new_experiment
 
@@ -331,12 +335,14 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
         runs = self.selected_runs()
         for i, run in enumerate(runs['run']):
             print('------------ Start Cheetah process script ------------')
-            cmdarr = [self.config['process'], run, inifile, dataset]
+            cmdarr = [self.config['process'], run, inifile, dataset] # TODO: call process_pal
             cfel_file.spawn_subprocess(cmdarr, shell=True)
 
             # Format output directory string
             if self.location['location'] is 'LCLS':
                 dir = 'r{:04d}'.format(int(run))
+            elif self.location['location'] is 'PAL': # TODO: this may change
+                dir = 'r{:05d}'.format(int(run))
             else:
                 dir = run
             dir += '-'+dataset
@@ -434,6 +440,8 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
             if olddir != '---':
                 if self.location['location'] is 'LCLS':
                     newdir = 'r{:04d}'.format(int(run))
+                elif self.location['location'] is 'PAL': # TODO: this may change
+                    newdir = 'r{:05d}'.format(int(run))
                 else:
                     newdir = run
                 newdir += '-' + newlabel
@@ -835,7 +843,6 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
         #
         location = gui_locations.determine_location()
         self.location = gui_locations.set_location_configuration(location)
-
 
         #
         # Set up the UI
