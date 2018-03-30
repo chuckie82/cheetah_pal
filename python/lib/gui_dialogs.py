@@ -181,7 +181,7 @@ class configure_cheetah_lcls_gui(PyQt5.QtWidgets.QDialog):
 
 
         layout = PyQt5.QtWidgets.QVBoxLayout(self)
-        self.setWindowTitle("Configure for LCLS instrument")
+        self.setWindowTitle("Configure for instrument")
 
         # Add a useful label
         self.label1a = PyQt5.QtWidgets.QLabel()
