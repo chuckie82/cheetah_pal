@@ -48,11 +48,11 @@ def extract_template(self, facility='lcls'):
         print('    Experiment: ', expt)
         print('    XTC directory: ', xtcdir)
         print('    Output directory: ', userdir)
-        print('#### WARNING: OVERRIDE gui_configuration.py ####') # FIXME: this has to reflect PAL directory structure
-        instr = 'cxi'
-        expt = 'test_180316'
-        xtcdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/raw_data'
-        userdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/cheetah'
+        #print('#### WARNING: OVERRIDE gui_configuration.py ####') # FIXME: this has to reflect PAL directory structure
+        #instr = 'cxi'
+        #expt = 'test_180316'
+        #xtcdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/raw_data'
+        #userdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/cheetah'
     else:
         print('Unknown facility. Exiting...')
         exit(0)
@@ -96,7 +96,7 @@ def extract_template(self, facility='lcls'):
     # Unpack template
     print('>---------------------<')
     print('Extracting template...')
-    cmd = ['tar', '-xf', '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/template.tar'] # FIXME: this has to reflect PAL directory structure
+    cmd = ['tar', '-xf', '/home/yoon82/cheetahTemplate/template.tar'] # FIXME: this has to reflect PAL directory structure
     cfel_file.spawn_subprocess(cmd, wait=True)
     print("Done")
 
