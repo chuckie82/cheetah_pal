@@ -1,10 +1,9 @@
 //
-//  sacla-hdf5-reader.h
-//  cheetah-ab
+//  hdf5-reader.h
 //
 //  Created by Anton Barty on 7/02/2014.
 //  Copyright (c) 2014 Anton Barty. All rights reserved.
-//
+//  Modified by Chun Hong Yoon on 5/15/2018.
 
 #ifndef __hdf5_reader__
 #define __hdf5_reader__
@@ -12,7 +11,6 @@
 #include <iostream>
 #include <hdf5.h>
 #include <hdf5_hl.h>
-
 
 /*
  *  Structure for holding SACLA HDF5 metadata
@@ -31,12 +29,16 @@ typedef struct {
     int64_t *end_tag_number;
     float   photon_energy_in_eV;
     float   photon_wavelength_in_nm;
+    float *photon_energy_keV;
 
     // Device objects within a run
     unsigned    ndetectors;
     char    **detector_name;
-    float encoderValue;
-    float detectorPosition;
+    float encoderValue[2];
+    float detectorPosition[2];
+
+    int *pumpLaserCode;
+    float *pumpLaserDelay;
 
     // Detector event tags within a run
     unsigned    nevents;
@@ -49,13 +51,13 @@ typedef struct {
 
 
 /*
- *  Prototypes for functions written to read SACLA HDF5 data
+ *  Prototypes for functions written to read HDF5 data
  */
 int HDF5_ReadHeader(const char*, h5_info_t*);
 int HDF5_Read2dDetectorFields(h5_info_t*, long);
 //int HDF5_ReadEventTags(h5_info_t*, long);
 int HDF5_ReadRunInfo(h5_info_t*, long);
-int HDF5_ReadImageRaw(h5_info_t*, long, float*);
+int HDF5_ReadImageRaw(h5_info_t*, long, uint16_t*);
 int HDF5_cleanup(h5_info_t*);
 
 
