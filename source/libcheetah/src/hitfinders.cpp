@@ -295,7 +295,6 @@ long hitfinderFastScan(cEventData *eventData, cGlobal *global)
     }
 
     free(mask);
-
     return hit;
 }
 
@@ -498,6 +497,7 @@ int hitfinder4(cGlobal *global, cEventData *eventData, long detIndex)
             hit = 1;
     }
     free(temp);
+
     return hit;
 }
 
