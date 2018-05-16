@@ -43,16 +43,12 @@ def extract_template(self, facility='lcls'):
         instr = 'cxi'
         expt = ss[3]
         xtcdir = '/' + str.join('/', ss[0:4]) + '/raw_data'
-        userdir = '/' + str.join('/', ss) + '/cheetah'
+        userdir = '/' + str.join('/', ss) + '/proc/cheetah'
         print('    Instrument: ', instr)
         print('    Experiment: ', expt)
         print('    XTC directory: ', xtcdir)
         print('    Output directory: ', userdir)
         #print('#### WARNING: OVERRIDE gui_configuration.py ####') # FIXME: this has to reflect PAL directory structure
-        #instr = 'cxi'
-        #expt = 'test_180316'
-        #xtcdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/raw_data'
-        #userdir = '/reg/d/psdm/cxi/cxitut13/scratch/yoon82/test_180316/cheetah'
     else:
         print('Unknown facility. Exiting...')
         exit(0)
@@ -96,6 +92,8 @@ def extract_template(self, facility='lcls'):
     # Unpack template
     print('>---------------------<')
     print('Extracting template...')
+    scratchdir = '/' + str.join('/', ss) + '/proc'
+    os.chdir( scratchdir )
     cmd = ['tar', '-xf', '/home/yoon82/cheetahTemplate/template.tar'] # FIXME: this has to reflect PAL directory structure
     cfel_file.spawn_subprocess(cmd, wait=True)
     print("Done")
@@ -103,8 +101,9 @@ def extract_template(self, facility='lcls'):
     # Fix permissions
     print('>---------------------<')
     print('Fixing permissions...')
-    cmd = ['chgrp', '-R', expt, 'cheetah/']
-    cfel_file.spawn_subprocess(cmd, wait=True)
+    #FIXME: check how group is set for new user in an experiment
+    #cmd = ['chgrp', '-R', expt, 'cheetah/']
+    #cfel_file.spawn_subprocess(cmd, wait=True)
     cmd = ['chmod', '-R', 'g+w', 'cheetah/']
     cfel_file.spawn_subprocess(cmd, wait=True)
     print("Done")
