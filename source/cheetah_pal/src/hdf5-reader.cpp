@@ -1,9 +1,6 @@
 //
-//  sacla-hdf5-reader.cpp
-//  cheetah-ab
+//  hdf5-reader.cpp
 //
-//  Created by Anton Barty on 7/02/2014.
-//  Copyright (c) 2014 Anton Barty. All rights reserved.
 //
 
 #include <iostream>
@@ -12,79 +9,115 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+#include <cstddef>
 
 #include "../include/hdf5-reader.h"
 
+unsigned getRunNumber(const std::string& str)
+{
+  std::size_t found = str.find_last_of("/\\");
+  std::size_t places = 7;
+  char runNum[1024];
+  strncpy( runNum, str.substr(found+1).c_str(), places );
+  return atoi(runNum);
+}
 
 /*
- *  Function for parsing SACLA HDF5 metadata
+ *  Function for parsing PAL HDF5 metadata
  */
 int HDF5_ReadHeader(const char *filename, h5_info_t *result) {
     
     char    h5field[1024];
-	hid_t   dataset_id;
-	hid_t   dataspace_id;
-	hid_t   datatype_id;
-	H5T_class_t dataclass;
+    hid_t   dataset_id;
+    hid_t   dataspace_id;
+    hid_t   datatype_id;
+    H5T_class_t dataclass;
 
     // Does the file exist?
     FILE *fp = fopen(filename, "r");
     if(fp) {
         fclose(fp);
+    } else {
+        printf("ERROR: File does not exist %s\n",filename);
+        exit(1);
     }
-    else {
-		printf("ERROR: File does not exist %s\n",filename);
-		exit(1);
-    }
-    
-    
+
     // Open PAL HDF5 file and read in header information
     hid_t   file_id;
-	printf("Filename: %s\n", filename);
-	file_id = H5Fopen(filename,H5F_ACC_RDONLY,H5P_DEFAULT);
-	if(file_id < 0){
-		printf("ERROR: Could not open HDF5 file %s\n",filename);
-		exit(1);
-	}
+    file_id = H5Fopen(filename,H5F_ACC_RDONLY,H5P_DEFAULT);
+    if(file_id < 0){
+        printf("ERROR: Could not open HDF5 file %s\n",filename);
+        exit(1);
+    }
     result->file_id = file_id;
     strcpy(result->filename, filename);
 
-    sprintf(h5field, "/file_info/run_number_list");
-	H5LTread_dataset(file_id, h5field, H5T_NATIVE_INT, &result->run_number);
-    printf("### /file_info/run_number_list: %i\n", result->run_number);
+    // Get run number
+    result->run_number = getRunNumber(filename);
 
-    sprintf(h5field, "/file_info/version");
-    H5LTread_dataset_string(file_id, h5field, result->version);
-    printf("### /file_info/version: %s\n", result->version);
+    sprintf(h5field, "/R%04d/header/file_version", result->run_number);
+    herr_t      status;
+    status = H5LTread_dataset_string(file_id, h5field, result->version);
 
-    sprintf(h5field, "header/frame_num");
-	H5LTread_dataset(file_id, h5field, H5T_NATIVE_INT, &result->nevents);
-    printf("### /header/frame_num: %i\n", result->nevents);
+    // Get number of events from length of photon energy array
+    sprintf(h5field, "/R%04d/scan_dat/photon_energy", result->run_number);
+    hid_t dataset = H5Dopen2(file_id, h5field, H5P_DEFAULT);
+    /*
+     * Get datatype and dataspace handles and then query
+     * dataset class, order, size, rank and dimensions.
+     */
+    hid_t datatype  = H5Dget_type(dataset);     /* datatype handle */
+    H5T_class_t t_class     = H5Tget_class(datatype);
+    if (t_class == H5T_FLOAT) printf("Data set has FLOAT type \n");
+    H5T_order_t order     = H5Tget_order(datatype);
+    if (order == H5T_ORDER_LE) printf("Little endian order \n");
+    size_t size  = H5Tget_size(datatype);
+    hsize_t dims_out[2];
+    hid_t dataspace = H5Dget_space(dataset);    /* dataspace handle */
+    int rank      = H5Sget_simple_extent_ndims(dataspace);
+    int status_n  = H5Sget_simple_extent_dims(dataspace, dims_out, NULL);
+    printf("rank %d, dimensions %lu \n", rank,
+           (unsigned long)(dims_out[0]));
+    result->nevents = dims_out[0];
 
-    sprintf(h5field, "header/photon_energy_eV");
-	H5LTread_dataset(file_id, h5field, H5T_NATIVE_FLOAT, &result->photon_energy_in_eV);
-    printf("### /header/photon_energy_eV: %f\n", result->photon_energy_in_eV);
+    // Get list of photon energies
+    // FIXME: seems to cause bus error
+    result->photon_energy_keV = (float*) calloc( result->nevents, sizeof(float));
+    sprintf(h5field, "/R%04d/scan_dat/photon_energy", result->run_number);
+    H5LTread_dataset_float(file_id, h5field, result->photon_energy_keV);
 
-    sprintf(h5field, "header/num_detectors");
-	H5LTread_dataset(file_id, h5field, H5T_NATIVE_UINT, &result->ndetectors);
-    printf("### header/num_detectors: %i\n", result->ndetectors);
+    // Get list of pump laser code
+    result->pumpLaserCode = (int*) calloc( result->nevents, sizeof(int) );
+    sprintf(h5field, "/R%04d/scan_dat/laser_on", result->run_number);
+    H5LTread_dataset_int(file_id, h5field, result->pumpLaserCode);
 
+    // Get list of pump laser delay
+    result->pumpLaserDelay = (float*) calloc( result->nevents, sizeof(float) );
+    sprintf(h5field, "/R%04d/scan_dat/laser_delay", result->run_number);
+    H5LTread_dataset_float(file_id, h5field, result->pumpLaserDelay);
+
+    // Get number of detectors
+    sprintf(h5field, "/R%04d/header/detector_num", result->run_number);
+    H5LTread_dataset(file_id, h5field, H5T_NATIVE_UINT, &result->ndetectors);
+
+    // Get detector names
+    // FIXME
     result->detector_name = (char**) calloc(result->ndetectors, sizeof(char*));
-    for(unsigned i=0; i<result->ndetectors;i++){
-        sprintf(h5field, "header/detector_%d",i);
+    for(unsigned i=0; i<result->ndetectors; i++){
+        sprintf(h5field, "/R%04d/header/detector_%d_name",result->run_number, i);
         result->detector_name[i] = (char*) calloc(1024, sizeof(char));
         H5LTread_dataset_string(file_id, h5field, result->detector_name[i]);
-        printf("### /header/detector_%d: %s\n", i, result->detector_name[i]);
     }
 
-    sprintf(h5field, "header/experimentID");
+    // Get experiment ID
+    // FIXME
+    sprintf(h5field, "/R%04d/header/exp_id", result->run_number);
     H5LTread_dataset_string(file_id, h5field, result->experimentID);
-    printf("### /header/experimentID: %s\n", result->experimentID);
 
-    sprintf(h5field, "header/EncoderValue");
-    H5LTread_dataset(file_id, h5field, H5T_NATIVE_FLOAT, &result->encoderValue);
-    printf("### /header/EncoderValue: %f\n", result->encoderValue);
+    for(unsigned i=0; i<result->ndetectors;i++){
+        sprintf(h5field, "/R%04d/header/detector_%d_distance", result->run_number, i);
+        H5LTread_dataset(file_id, h5field, H5T_NATIVE_FLOAT, &result->encoderValue[i]);
+    }
 
     return 1;
 }
@@ -108,10 +141,10 @@ int HDF5_Read2dDetectorFields(h5_info_t *result, long run_index) {
 
 	H5Gget_num_objs(group, &nfields);
 	printf("Number of fields in %s: %llu\n", h5field, nfields);
-    result->detector_name = (char**) calloc(nfields, sizeof(char*));
+        result->detector_name = (char**) calloc(nfields, sizeof(char*));
 
 
-    printf("Finding 2D detectors\n");
+        printf("Finding 2D detectors\n");
 	for(long i=0; i< nfields; i++) {
 		ssize_t r;
 		r = H5Gget_objname_by_idx( group, i, tempstr, 1024);
@@ -142,23 +175,23 @@ int HDF5_ReadRunInfo(h5_info_t *result, long run_index) {
     char    tempstr[1024];
     long    counter = 0;
 
-	hid_t   group;
-	hsize_t	nfields;
-	sprintf(h5field, "%s/detector_2d_1",result->run_string[run_index]);
-	group = H5Gopen(result->file_id, h5field, NULL);
+    hid_t   group;
+    hsize_t	nfields;
+    sprintf(h5field, "%s/detector_2d_1",result->run_string[run_index]);
+    group = H5Gopen(result->file_id, h5field, NULL);
 
-	H5Gget_num_objs(group, &nfields);
-	printf("Number of fields in %s: %llu\n", h5field, nfields);
-	if (result->event_name != NULL) {
-		free(result->event_name);
-	}
+    H5Gget_num_objs(group, &nfields);
+    printf("Number of fields in %s: %llu\n", h5field, nfields);
+    if (result->event_name != NULL) {
+	free(result->event_name);
+    }
     result->event_name = (char**) calloc(nfields, sizeof(char*));
 
     printf("Finding event names\n");
-	for(long i=0; i< nfields; i++) {
-		ssize_t r;
- 		r = H5Gget_objname_by_idx(group, i, tempstr, 1024);
-		printf("%li : %s", i, tempstr);
+    for(long i=0; i< nfields; i++) {
+        ssize_t r;
+        r = H5Gget_objname_by_idx(group, i, tempstr, 1024);
+        printf("%li : %s", i, tempstr);
 
         if(strncmp(tempstr,"tag", 3)) {
             printf("\t(not a new event)\n");
@@ -200,39 +233,93 @@ int HDF5_ReadRunInfo(h5_info_t *result, long run_index) {
 /*
  *  Function for reading all <n> 2D detectors into one massive 2D array (for passing to Cheetah or CrystFEL)
  */
-int HDF5_ReadImageRaw(h5_info_t *header, long eventID, float *buffer) {
+int HDF5_ReadImageRaw(h5_info_t *header, long eventID, uint16_t *buffer) {
 
+    hid_t	dataset;         /* handles */
+    hid_t	datatype, dataspace;
+    hid_t	memspace;
+    H5T_class_t t_class;                 /* data type class */
+    H5T_order_t order;                 /* data order */
+    size_t	size;                  /*
+                                        * size of the data element
+                                        * stored in file
+                                        */
+    hsize_t     dimsm[3];              /* memory space dimensions */
+    hsize_t     dims_out[3];           /* dataset dimensions */
+
+    hsize_t	 count[3];              /* size of the hyperslab in the file */
+    hsize_t	 offset[3];             /* hyperslab offset in the file */
+    hsize_t	 count_out[3];          /* size of the hyperslab in memory */
+    hsize_t	 offset_out[3];         /* hyperslab offset in memory */
+    int          status, status_n, rank;
+    int RANK_OUT = 3;
+
+    // FIXME: how to figure out which detector gets used for hit finding
     char    h5field[1024];
-    char    h5group[1024];
-	hid_t   group;
+    sprintf(h5field, "/R%04d/scan_dat/%s_data", header->run_number, header->detector_name[0]);
+    dataset = H5Dopen2( header->file_id, h5field, H5P_DEFAULT);
 
-    printf("Reading event: %d\n",eventID);
+    /*
+     * Get datatype and dataspace handles and then query
+     * dataset class, order, size, rank and dimensions.
+     */
+    datatype  = H5Dget_type(dataset);     /* datatype handle */
+    t_class     = H5Tget_class(datatype);
+    if (t_class == H5T_NATIVE_USHORT) printf("Data set has UINT16 type \n");
+    order     = H5Tget_order(datatype);
+    if (order == H5T_ORDER_LE) printf("Little endian order \n");
 
+    size  = H5Tget_size(datatype);
+    dataspace = H5Dget_space(dataset);    /* dataspace handle */
+    rank      = H5Sget_simple_extent_ndims(dataspace);
+    status_n  = H5Sget_simple_extent_dims(dataspace, dims_out, NULL);
 
-    // Open the run group
-    sprintf(h5group, "ts-%07d", eventID);
-    group = H5Gopen( header->file_id, h5group, NULL );
-    if (group<0) {
-        printf("%s : H5Gopen failed\n",h5group);
-        return -1;
-    }
+    /*
+     * Define hyperslab in the dataset.
+     */
+    offset[0] = eventID;
+    offset[1] = 0;
+    offset[2] = 0;
+    count[0]  = 1;
+    count[1]  = dims_out[1];
+    count[2]  = dims_out[2];
+    status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL,
+                                 count, NULL);
 
-    // Name for this part of the data
-    sprintf(h5field, "data");
+    /*
+     * Define the memory dataspace.
+     */
+    dimsm[0] = dims_out[0];
+    dimsm[1] = dims_out[1];
+    dimsm[2] = dims_out[2];
+    memspace = H5Screate_simple(RANK_OUT,dimsm,NULL);
 
-    // Error check: does this group/field even exist (before we try to read it)?
-    herr_t herr;
-    herr = H5LTfind_dataset ( group, h5field );
-    if(herr!=1) {
-        printf("%s/%s : H5LTfind_dataset=false\n",h5group, h5field);
-        H5Gclose(group);
-        return -1;
-    }
+    /*
+     * Define memory hyperslab.
+     */
+    offset_out[0] = 0;
+    offset_out[1] = 0;
+    offset_out[2] = 0;
+    count_out[0]  = 1;
+    count_out[1]  = dims_out[1];
+    count_out[2]  = dims_out[2];
+    status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
+                                 count_out, NULL);
 
-    // Read the data set
-    H5LTread_dataset_float( group, h5field, buffer);
-    H5Gclose(group);
+    /*
+     * Read data from hyperslab in the file into the hyperslab in
+     * memory and display.
+     */
+    status = H5Dread(dataset, H5T_NATIVE_USHORT, memspace, dataspace,
+                     H5P_DEFAULT, buffer);
 
+    /*
+     * Close/release resources.
+     */
+    H5Tclose(datatype);
+    H5Dclose(dataset);
+    H5Sclose(dataspace);
+    H5Sclose(memspace);
 
     return 1;
 }
