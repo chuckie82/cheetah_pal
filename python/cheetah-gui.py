@@ -44,6 +44,7 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
         # No run selected
         if len(runs['run']) == 0:
             return
+        print("### python/cheetah-gui.py: ", runs['path'][0], ' , ', filepat)
         file = runs['path'][0] + filepat
 
         # Display if some file matches pattern (avoids error when no match)
@@ -342,7 +343,7 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
             if self.location['location'] is 'LCLS':
                 dir = 'r{:04d}'.format(int(run))
             elif self.location['location'] is 'PAL': # TODO: this may change
-                dir = 'r{:05d}'.format(int(run))
+                dir = '{:07d}'.format(int(run))
             else:
                 dir = run
             dir += '-'+dataset
@@ -869,7 +870,7 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
                 os.chdir(expdir)
             except:
                 print("Uh oh - it looks like that directory does not exist any more.")
-                print("It may have been moved or deleted.  Plesae check it still exists.")
+                print("It may have been moved or deleted.  Please check it still exists.")
                 self.exit_gui()
 
 
