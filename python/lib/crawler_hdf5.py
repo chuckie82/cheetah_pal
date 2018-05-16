@@ -49,8 +49,8 @@ def scan_hdf5(hdf5_dir):
         directory = os.path.basename(dirname)
 
         # Extract the run number (Warning: PAL-specific) # FIXME: would be good if compatible with LCLS
-        if directory.startswith('r'):
-            run = int(directory[1:6])
+        if directory.startswith('0'):
+            run = int(directory[:7])
 
 
         #print(filename)
