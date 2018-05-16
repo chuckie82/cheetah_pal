@@ -21,40 +21,40 @@
 
 int main(int argc, const char * argv[])
 {
-	if (argc != 3) {
-		printf("Usage: %s pal.h5 cheetah.ini\n", argv[0]);
-		return -1;
-	}
+    if (argc != 3) {
+        printf("Usage: %s pal.h5 cheetah.ini\n", argv[0]);
+        return -1;
+    }
 
     static time_t startT = 0;
-	time(&startT);
+    time(&startT);
 
-	// PAL hdf5 input file and Cheetah configuration file
-	char	fname[1024];
-	char	cheetahini[1024];
+    // PAL hdf5 input file and Cheetah configuration file
+    char fname[1024];
+    char cheetahini[1024];
 
-	// Take configuration from command line arguments
-	strcpy(fname,argv[1]);
-	strcpy(cheetahini,argv[2]);
+    // Take configuration from command line arguments
+    strcpy(fname, argv[1]);
+    strcpy(cheetahini, argv[2]);
 
     /*
-	 *	Initialise Cheetah
-	 */
-	printf("Setting up Cheetah...\n");
-	//static uint32_t ntriggers = 0;
-	//static long frameNumber = 0;
+     *	Initialise Cheetah
+     */
+    printf("Setting up Cheetah...\n");
+    //static uint32_t ntriggers = 0;
+    //static long frameNumber = 0;
     //long    runNumber = 0;
-	static cGlobal cheetahGlobal;
-	strcpy(cheetahGlobal.configFile, cheetahini);
+    static cGlobal cheetahGlobal;
+    strcpy(cheetahGlobal.configFile, cheetahini);
     sprintf(cheetahGlobal.facility, "PAL");
-	cheetahInit(&cheetahGlobal);
+    cheetahInit(&cheetahGlobal);
     printf("Done cheetahInit\n");
 
     /*
-	 *	Open PAL HDF5 file
-	 *	Read file header and information
-	 */
-	printf("Start HDF5_ReadHeader: %s\n", fname);
+     *	Open PAL HDF5 file
+     *	Read file header and information
+     */
+    printf("Start HDF5_ReadHeader: %s\n", fname);
     h5_info_t header;
     HDF5_ReadHeader(fname, &header);
     // Gather detector fields and event tags for this run
@@ -63,23 +63,16 @@ int main(int argc, const char * argv[])
     //printf("start readRunInfo\n");
     //HDF5_ReadRunInfo(&header, 0);
 
-    printf("%i, %s\n",header.ndetectors, header.detector_name[0]);
-
     /******************************************
      * Copy header information to cheetahGlobal
      ******************************************/
     sprintf(cheetahGlobal.experimentID, header.experimentID);
     cheetahGlobal.runNumber = header.run_number;
 
-    //cheetahGlobal.detector[0].cameraLengthOffset = 999;
-
-    printf("%s, %d\n",cheetahGlobal.experimentID, cheetahGlobal.runNumber);
-    printf("asic: %d\n",cheetahGlobal.detector[0].asic_nx);
-
     /*
      * Create a buffer for holding the detector image data
      */
-    float   *buffer = (float*) calloc(cheetahGlobal.detector[0].pix_nn, sizeof(float));
+    uint16_t   *buffer = (uint16_t*) calloc(cheetahGlobal.detector[0].pix_nn, sizeof(uint16_t));
     hsize_t dims[2];
     dims[0] = cheetahGlobal.detector[0].asic_ny; // ss
     dims[1] = cheetahGlobal.detector[0].asic_nx; // fs
@@ -89,9 +82,8 @@ int main(int argc, const char * argv[])
     long    detID = 0;
 
     // Loop through all events found in this run
-    for(long eventID=0; eventID<header.nevents; eventID++) {
-        printf("Processing event: %li\n", eventID);
 
+    for(long eventID=0; eventID<header.nevents; eventID++) {
         /*
          *  Cheetah: Calculate time beteeen processing of data frames
          */
@@ -108,14 +100,12 @@ int main(int argc, const char * argv[])
          *	Read next image
          */
         if (HDF5_ReadImageRaw(&header, eventID, buffer) < 0) continue;
-        printf("Done ReadImageRaw\n");
 
         /*
          *	Cheetah: Create a new eventData structure in which to place all information
          */
         cEventData	*eventData;
         eventData = cheetahNewEvent(&cheetahGlobal);
-        printf("Done cheetahNewEvent\n");
 
         /*
          *  Cheetah: Populate event structure with meta-data
@@ -124,44 +114,42 @@ int main(int argc, const char * argv[])
         eventData->frameNumber = eventID;
         eventData->runNumber = header.run_number; // TODO: get from input.h5
         eventData->nPeaks = 0;
-        eventData->pumpLaserCode = 0; // TODO: get from input.h5
-        eventData->pumpLaserDelay = 0; // TODO: get from input.h5
-        eventData->photonEnergyeV = header.photon_energy_in_eV; // TODO: get from input.h5
+        eventData->pumpLaserCode = header.pumpLaserCode[eventID];
+        eventData->pumpLaserDelay = (double) header.pumpLaserDelay[eventID];
+        eventData->photonEnergyeV = header.photon_energy_keV[eventID]*1000; // TODO: get from input.h5
         eventData->wavelengthA = 12398 / eventData->photonEnergyeV; // 4.1357E-15 * 2.9979E8 * 1E10 / eV (A)
         eventData->pGlobal = &cheetahGlobal;
         eventData->fiducial = eventID; // must be unique
-        sprintf(eventData->eventname, "ts-%07d",eventID);
+        sprintf(eventData->eventname, "%07d",eventID);
         //eventData->detectorDistance = header.detectorPosition;
-        eventData->detector[0].detectorZ = header.encoderValue;
+        eventData->detector[detID].detectorZ = header.encoderValue[detID];
 
-        printf("eventData: %d, %f\n",eventData->runNumber,eventData->photonEnergyeV);
         /*
          *  Cheetah: Copy image data into
          *  Raw data is currently hard-coded as UINT16_t, SACLA provides as float, so we have to loose precision :-(
          */
         for(long ii=0; ii<cheetahGlobal.detector[detID].pix_nn; ii++) {
-            eventData->detector[detID].data_raw16[ii] = (uint16_t) lrint(buffer[ii]);
+            eventData->detector[detID].data_raw16[ii] = buffer[ii];
         }
 
         /*
          *	Cheetah: Process this event
          */
         cheetahProcessEventMultithreaded(&cheetahGlobal, eventData);
-        printf("Done cheetahProcessEventMultithreaded\n");
     }
 
-	// Clean up stale IDs and exit
+    // Clean up stale IDs and exit
     HDF5_cleanup(&header);
 
-	time_t endT;
-	time(&endT);
-	double diff = difftime(endT,startT);
-	std::cout << "time taken: " << diff << " seconds\n";
+    time_t endT;
+    time(&endT);
+    double diff = difftime(endT,startT);
+    std::cout << "time taken: " << diff << " second(s)\n";
 
-	/*
-	 *	Cheetah: Cleanly exit by closing all files, releasing memory, etc.
-	 */
-	cheetahExit(&cheetahGlobal);
+    /*
+     *	Cheetah: Cleanly exit by closing all files, releasing memory, etc.
+     */
+    cheetahExit(&cheetahGlobal);
 
     return 0;
 }
