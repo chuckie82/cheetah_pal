@@ -9,9 +9,8 @@ import lib.cfel_filetools as cfel_file
 
 
 def scan_data(data_dir):
-    #print("Crawler data: ", data_dir)
 
-    pattern = data_dir + '/*.h5*'
+    pattern = data_dir + '/*/*.h5'
     debug = False
 
     # Create sorted file list (glob seems to return files in random order)
@@ -22,11 +21,11 @@ def scan_data(data_dir):
         print(files)
 
     # Extract the run bit from HDF5 file name
-    # Turn the rXXXX string into an integer (for compatibility with old crawler files)
+    # Turn the 000000X string into an integer (for compatibility with old crawler files)
     out = []
     for filename in files:
         thisrun = filename.split('.')[0]
-        thisrun = int(thisrun[-5::])
+        thisrun = int(thisrun[-7::])
         out.append(thisrun)
 
 
