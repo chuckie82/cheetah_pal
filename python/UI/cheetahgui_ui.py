@@ -344,7 +344,7 @@ class Ui_MainWindow(object):
         item = self.table_status.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Dataset"))
         item = self.table_status.horizontalHeaderItem(2)
-        item.setText(_translate("MainWindow", "XTC"))
+        item.setText(_translate("MainWindow", "H5Input"))
         item = self.table_status.horizontalHeaderItem(3)
         item.setText(_translate("MainWindow", "Cheetah"))
         item = self.table_status.horizontalHeaderItem(4)
