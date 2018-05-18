@@ -103,8 +103,8 @@ def extract_template(self, facility='lcls'):
     print('>---------------------<')
     print('Fixing permissions...')
     #FIXME: check how group is set for new user in an experiment
-    #cmd = ['chgrp', '-R', expt, 'cheetah/']
-    #cfel_file.spawn_subprocess(cmd, wait=True)
+    cmd = ['chgrp', '-R', 'user', 'cheetah/']
+    cfel_file.spawn_subprocess(cmd, wait=True)
     cmd = ['chmod', '-R', 'g+w', 'cheetah/']
     cfel_file.spawn_subprocess(cmd, wait=True)
     print("Done")
