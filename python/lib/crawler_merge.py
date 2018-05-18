@@ -63,7 +63,6 @@ def crawler_merge(info):
     # Old: convert r0002 (string) to 2 (integer) so that run is in the same format in each dict
     #   This may disappear later if datasets['run'] is in the same format and we fix the de-referencing elsewhere
     #
-    print("XTCdirToInt: ", XTCdirToInt) 
     if XTCdirToInt:
         try:
             if data != {}:
