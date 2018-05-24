@@ -37,6 +37,7 @@ typedef struct {
     float encoderValue[2];
     float detectorPosition[2];
 
+    int *pumpLaserOn;
     int *pumpLaserCode;
     float *pumpLaserDelay;
 

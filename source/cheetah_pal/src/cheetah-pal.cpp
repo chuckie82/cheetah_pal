@@ -114,7 +114,8 @@ int main(int argc, const char * argv[])
         eventData->frameNumber = eventID;
         eventData->runNumber = header.run_number; // TODO: get from input.h5
         eventData->nPeaks = 0;
-        eventData->pumpLaserCode = header.pumpLaserCode[eventID];
+        eventData->pumpLaserOn = header.pumpLaserOn[eventID];
+        //eventData->pumpLaserCode = header.pumpLaserCode[eventID];
         eventData->pumpLaserDelay = (double) header.pumpLaserDelay[eventID];
         eventData->photonEnergyeV = header.photon_energy_keV[eventID]*1000; // TODO: get from input.h5
         eventData->wavelengthA = 12398 / eventData->photonEnergyeV; // 4.1357E-15 * 2.9979E8 * 1E10 / eV (A)

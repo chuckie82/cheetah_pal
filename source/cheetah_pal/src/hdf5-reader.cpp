@@ -87,13 +87,13 @@ int HDF5_ReadHeader(const char *filename, h5_info_t *result) {
     H5LTread_dataset_float(file_id, h5field, result->photon_energy_keV);
 
     // Get list of pump laser code
-    result->pumpLaserCode = (int*) calloc( result->nevents, sizeof(int) );
+    result->pumpLaserOn = (int*) calloc( result->nevents, sizeof(int) );
     sprintf(h5field, "/R%04d/scan_dat/laser_on", result->run_number);
-    H5LTread_dataset_int(file_id, h5field, result->pumpLaserCode);
+    H5LTread_dataset_int(file_id, h5field, result->pumpLaserOn);
 
     // Get list of pump laser delay
     result->pumpLaserDelay = (float*) calloc( result->nevents, sizeof(float) );
-    sprintf(h5field, "/R%04d/scan_dat/laser_delay", result->run_number);
+    sprintf(h5field, "/R%04d/scan_dat/laser_delay_time", result->run_number);
     H5LTread_dataset_float(file_id, h5field, result->pumpLaserDelay);
 
     // Get number of detectors

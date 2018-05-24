@@ -730,6 +730,7 @@ static CXI::Node *createCXISkeleton(const char *filename, cGlobal *global){
      */
     Node *facility = root->createGroup("instrument");
 
+    // PAL
     if(!strcmp(global->facility, "PAL") ) {
         Node *pal = facility;
         root->createLink("PAL","instrument");
@@ -741,7 +742,10 @@ static CXI::Node *createCXISkeleton(const char *filename, cGlobal *global){
             detector->createStack("position",H5T_NATIVE_DOUBLE);
             detector->createStack("EncoderValue",H5T_NATIVE_DOUBLE);
         }
+        pal->createStack("pump_laser_on",H5T_NATIVE_INT);
+        pal->createStack("pump_laser_delay",H5T_NATIVE_DOUBLE);
     }
+
     // LCLS
     if(!strcmp(global->facility, "LCLS") ) {
         //Node *lcls = root->createGroup("LCLS");
@@ -1343,6 +1347,7 @@ static CXI::Node *createResultsSkeleton(const char *filename, cGlobal *global){
     // Information about the instrument/beamline (such as encoder values)
     Node *facility = root->createGroup("instrument");
 
+    // PAL
     if(!strcmp(global->facility, "PAL") ) {
         Node *pal = facility;
         root->createLink("PAL","instrument");
@@ -1353,7 +1358,10 @@ static CXI::Node *createResultsSkeleton(const char *filename, cGlobal *global){
             detector->createStack("position",H5T_NATIVE_DOUBLE);
             detector->createStack("EncoderValue",H5T_NATIVE_DOUBLE);
         }
+        pal->createStack("pump_laser_on", H5T_NATIVE_INT);
+        pal->createStack("pump_laser_delay", H5T_NATIVE_DOUBLE);
     }
+
     // LCLS
     if(!strcmp(global->facility, "LCLS") ) {
         Node *lcls = facility;
@@ -2109,6 +2117,8 @@ void writeCXIData(CXI::Node *cxi, cEventData *eventData, cGlobal *global, uint s
             pal.cxichild("detector",detIndex+1)["position"].write(&global->detector[detIndex].detectorZ,stackSlice);
             pal.cxichild("detector",detIndex+1)["EncoderValue"].write(&global->detector[detIndex].detectorEncoderValue,stackSlice);
         }
+        pal["pump_laser_on"].write(&eventData->pumpLaserOn, stackSlice);
+        pal["pump_laser_delay"].write(&eventData->pumpLaserDelay, stackSlice);
     }
 
     // LCLS
@@ -2493,6 +2503,12 @@ void writeResultsData(CXI::Node *results, cEventData *eventData, cGlobal *global
             pal.child("detector",detIndex)["position"].write(&global->detector[detIndex].detectorZ,stackSlice);
             pal.child("detector",detIndex)["EncoderValue"].write(&global->detector[detIndex].detectorEncoderValue,stackSlice);
         }
+        pal["photon_energy_eV"].write(&eventData->photonEnergyeV,stackSlice);
+        pal["photon_wavelength_A"].write(&eventData->wavelengthA,stackSlice);
+
+        // LaserEventCode
+        pal["pump_laser_on"].write(&eventData->pumpLaserOn,stackSlice);
+        pal["pump_laser_delay"].write(&eventData->pumpLaserDelay,stackSlice);
     }
     /*
      *  Write instrument information
