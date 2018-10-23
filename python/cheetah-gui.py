@@ -793,9 +793,9 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
 
         # Trap some legacy case with fewer keys in file
         if not 'cheetahini' in config.keys():
-            config.update({'cheetahini': 'darkcal.ini'})
+            config.update({'cheetahini': 'pal.ini'})
         if not 'cheetahtag' in config.keys():
-            config.update({'cheetahtag': 'darkcal'})
+            config.update({'cheetahtag': 'pal'})
 
 
         return config

@@ -174,10 +174,10 @@ class configure_cheetah_lcls_gui(PyQt5.QtWidgets.QDialog):
         super(configure_cheetah_lcls_gui, self).__init__(parent)
 
         detectorTypes = ['mx225hs-4x','mx225hs-2x','cspad','cspad2x2','mx170hs-1x','mx170hs-2x','pnCCD','sacla_mpCCD','pilatus6M']
-        detectorNames = ['None','CxiDs1.0:Cspad.0','CxiDs2.0:Cspad.0','CxiDsd.0:Cspad.0','DscCsPad','MfxEndstation.0:Cspad.0','XppGon.0:Cspad.0',
+        detectorNames = ['mx225hs-4x:Rayonix.0','None','CxiDs1.0:Cspad.0','CxiDs2.0:Cspad.0','CxiDsd.0:Cspad.0','DscCsPad','MfxEndstation.0:Cspad.0','XppGon.0:Cspad.0',
                          'CxiEndstation.0:Rayonix.0','MfxEndstation.0:Rayonix.0','XppGon.0:Rayonix.0',
                          'Camp.0:pnCCD.0','Camp.0:pnCCD.1']
-        detectorZEncoder = ['None','CXI:DS1:MMS:06.RBV','CXI:DS2:MMS:06.RBV','MFX:DET:MMS:04.RBV']
+        detectorZEncoder = ['BL:HX:EH2:SFX:det_distance','None','CXI:DS1:MMS:06.RBV','CXI:DS2:MMS:06.RBV','MFX:DET:MMS:04.RBV']
 
 
         layout = PyQt5.QtWidgets.QVBoxLayout(self)

@@ -1,14 +1,19 @@
 import numpy as np
 import h5py
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("fname", help="Full path to Cheetah .cxi filename", type=str)
+args = parser.parse_args()
 
-fname = "ue_180424_SFX1-r0123-c00.cxi"
+fname =	args.fname
+print("fname: ", fname)
 onList = fname.split('.')[0]+'-laserOn.lst'
 offList = fname.split('.')[0]+'-laserOff.lst'
 
 f = h5py.File(fname, "r")
 laserOn = f["/instrument/pump_laser_on"].value
 f.close()
-
+print("laserOn: ", laserOn)
 with open(onList, "w") as on_file:
     with open(offList, "w") as off_file:
         for i, val in enumerate(laserOn):

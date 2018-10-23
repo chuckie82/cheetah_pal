@@ -171,8 +171,8 @@ echo "This is run number $RUNNUMBER"
 
 # if darkcal override everything
 if [ $DARKCAL ]; then
-	TAG="dark"
-	INIFILE="darkcal.ini"
+	TAG="pal"
+	INIFILE="pal.ini"
 fi
 
 # set the save directory if not specified
