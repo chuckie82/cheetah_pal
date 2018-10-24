@@ -442,7 +442,7 @@ class cheetah_gui(PyQt5.QtWidgets.QMainWindow):
                 if self.location['location'] is 'LCLS':
                     newdir = 'r{:04d}'.format(int(run))
                 elif self.location['location'] is 'PAL': # TODO: this may change
-                    newdir = 'r{:05d}'.format(int(run))
+                    newdir = 'r{:07d}'.format(int(run))
                 else:
                     newdir = run
                 newdir += '-' + newlabel

@@ -13,7 +13,8 @@ offList = fname.split('.')[0]+'-laserOff.lst'
 f = h5py.File(fname, "r")
 laserOn = f["/instrument/pump_laser_on"].value
 f.close()
-print("laserOn: ", laserOn)
+print("Writing laser on list: ", onList)
+print("Writing laser off list: ", offList)
 with open(onList, "w") as on_file:
     with open(offList, "w") as off_file:
         for i, val in enumerate(laserOn):

@@ -46,6 +46,10 @@ def determine_location():
         print("Looks like we are at PAL.")
         location = 'PAL'
 
+    elif hostname.startswith("ur1p") and hostname.endswith("4thbl"):
+        print("Looks like we are at PAL.")
+        location = 'PAL'
+
     elif hostname.endswith("sdfarm.kr"):
         print("Looks like we are at KISTI.")
         location = 'KISTI'
