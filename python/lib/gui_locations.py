@@ -52,7 +52,7 @@ def determine_location():
 
     elif hostname.endswith("sdfarm.kr"):
         print("Looks like we are at KISTI.")
-        location = 'KISTI'
+        location = 'PAL' # KISTI behaves like PAL
 
     else:
         print("Unable to determine location from hostname")
@@ -97,12 +97,6 @@ def set_location_configuration(location="Default"):
             'qcommand' : ' '
         }
         result.update(PAL)
-
-    if  location=='KISTI':
-        KISTI = {
-            'qcommand' : ' '
-        }
-        result.update(KISTI)
 
     else:
         default = {
