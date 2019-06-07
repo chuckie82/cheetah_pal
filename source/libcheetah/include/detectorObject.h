@@ -71,6 +71,12 @@ static const unsigned  MX225HS2X_ASIC_NY = 2880;		// ASIC ny = extent of one ASI
 static const unsigned  MX225HS2X_nASICS_X = 1;		// Probably really 5x12 ASIC, but then
 static const unsigned  MX225HS2X_nASICS_Y = 1;		// ASIC dimensions aren't whole numbers
 
+// PAL Rayonix MX225HS-3x //
+static const unsigned  MX225HS3X_ASIC_NX = 1920;                // ASIC nx = extent of one ASIC in x
+static const unsigned  MX225HS3X_ASIC_NY = 1920;                // ASIC ny = extent of one ASIC in y
+static const unsigned  MX225HS3X_nASICS_X = 1;          // Probably really 5x12 ASIC, but then
+static const unsigned  MX225HS3X_nASICS_Y = 1;          // ASIC dimensions aren't whole numbers
+
 // PAL Rayonix MX225HS-4x //
 static const unsigned  MX225HS4X_ASIC_NX = 1440;		// ASIC nx = extent of one ASIC in x
 static const unsigned  MX225HS4X_ASIC_NY = 1440;		// ASIC ny = extent of one ASIC in y

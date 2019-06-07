@@ -769,7 +769,7 @@ class cxiview(PyQt5.QtWidgets.QMainWindow):
         # Sanity check: Do geometry and data shape match?
         if self.geometry_ok and (temp['data'].flatten().shape != self.geometry['x'].shape):
             print("Error: Shape of geometry and image data do not match")
-            print('Data size: ', temp.data.flatten().shape)
+            print('Data size: ', temp['data'].flatten().shape)
             print('Geometry size: ', self.geometry['x'].shape)
             print('Displaying images without geometry applied')
             self.geometry_ok = False

@@ -36,9 +36,12 @@ class cheetah_crawler(PyQt5.QtWidgets.QMainWindow):
             self.datatype = 'XTC'
         elif 'p11' in self.data_dir:
             self.datatype = 'P11'
-        elif '/xfel/ffhs' in self.data_dir:
+        elif '/xfel/ffhs' in self.data_dir or \
+             'ffs' in self.data_dir:
             self.datatype = 'PAL'
-
+        else:
+            print("Could not figure out datatype")
+            exit(0)
 
         # What have we decided?
         print("Will use data crawler for ", self.datatype)

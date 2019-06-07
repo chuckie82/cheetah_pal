@@ -329,6 +329,19 @@ void cPixelDetectorCommon::configure(cGlobal * global) {
 		pix_nn = pix_nx * pix_ny;
 		pixelSize = 78e-6;
 	}
+        else if(strcmp(detectorName, "mx225hs-3x") == 0 ) {
+                strcpy(detectorType, "mx225hs-3x");
+                nasics_x = MX225HS3X_nASICS_X;
+                nasics_y = MX225HS3X_nASICS_Y;
+                asic_nn = asic_nx*asic_ny;
+                asic_nx = MX225HS3X_ASIC_NX;
+                asic_ny = MX225HS3X_ASIC_NY;
+                asic_nn = asic_nx*asic_ny;
+                pix_nx = asic_nx * nasics_x;
+                pix_ny = asic_ny * nasics_y;
+                pix_nn = pix_nx * pix_ny;
+                pixelSize = 117e-6;
+        }
 	else if(strcmp(detectorName, "mx225hs-4x") == 0 ) {
 		strcpy(detectorType, "mx225hs-4x");
 		nasics_x = MX225HS4X_nASICS_X;
