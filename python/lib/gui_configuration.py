@@ -95,7 +95,7 @@ def extract_template(self, facility='lcls'):
     scratchdir = '/' + str.join('/', ss) + '/proc'
     os.chdir( scratchdir )
     tarFile = os.environ['TEMPLATE']
-    cmd = ['tar', '-xf', tarFile] # FIXME: this has to reflect PAL directory structure
+    cmd = ['tar', '-xf', tarFile]
     cfel_file.spawn_subprocess(cmd, wait=True)
     print("Done")
 
